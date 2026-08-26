@@ -24,6 +24,8 @@
         body.theme-latte .input-custom:focus { border-color: #8C7A6B; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(140, 122, 107, 0.1); }
         body.theme-latte .btn-primary { background: #4A3B32; color: #FFFFFF; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 500; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
         body.theme-latte .btn-primary:hover { background: #3D312A; }
+        body.theme-latte .btn-instant { background: #8C7A6B; color: #FFFFFF; border-radius: 0.75rem; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.8rem; transition: background 0.2s; }
+        body.theme-latte .btn-instant:hover { background: #7A685A; }
         body.theme-latte .accent-color { color: #8C7A6B; }
 
         /* THEME: Forest Green (Calm Nature) */
@@ -34,6 +36,8 @@
         body.theme-forest .input-custom:focus { border-color: #4A7C59; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1); }
         body.theme-forest .btn-primary { background: #3B5E4B; color: #FFFFFF; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 500; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
         body.theme-forest .btn-primary:hover { background: #2E4A3B; }
+        body.theme-forest .btn-instant { background: #5A826C; color: #FFFFFF; border-radius: 0.75rem; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.8rem; transition: background 0.2s; }
+        body.theme-forest .btn-instant:hover { background: #486A57; }
         body.theme-forest .accent-color { color: #4A7C59; }
 
         /* THEME: Dark Espresso (Midnight Mode) */
@@ -44,6 +48,8 @@
         body.theme-dark .input-custom:focus { border-color: #C2B4A3; background: #24211E; box-shadow: 0 0 0 3px rgba(194, 180, 163, 0.1); }
         body.theme-dark .btn-primary { background: #C2B4A3; color: #1A1816; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
         body.theme-dark .btn-primary:hover { background: #D5CCC2; }
+        body.theme-dark .btn-instant { background: #A89885; color: #1A1816; border-radius: 0.75rem; padding: 0.6rem 1rem; font-weight: 600; font-size: 0.8rem; transition: background 0.2s; }
+        body.theme-dark .btn-instant:hover { background: #C2B4A3; }
         body.theme-dark .accent-color { color: #C2B4A3; }
         body.theme-dark table th { color: #C2B4A3 !important; border-bottom-color: #3F3935 !important; }
         body.theme-dark table td { border-color: #332E2A !important; }
@@ -75,18 +81,23 @@
 
         <div class="flex items-center gap-2 justify-between w-full md:w-auto">
             <div class="bg-white px-3 py-1.5 rounded-xl shadow-sm flex-1 md:flex-initial">
-                <p class="text-[10px] accent-color font-medium">Pemasukan</p>
+                <p class="text-[10px] accent-color font-medium">Pemasukan Bulan Ini</p>
                 <p id="headerTotalIncome" class="text-sm font-bold">Rp0</p>
             </div>
             <div class="bg-white px-3 py-1.5 rounded-xl shadow-sm flex-1 md:flex-initial">
-                <p class="text-[10px] accent-color font-medium">Pengeluaran</p>
+                <p class="text-[10px] accent-color font-medium">Pengeluaran Bulan Ini</p>
                 <p id="headerTotalExpense" class="text-sm font-bold text-red-400">Rp0</p>
             </div>
 
             <!-- MENU DROPDOWN TITIK TIGA (⋮) -->
             <div class="relative">
                 <button onclick="toggleMenu()" class="input-custom font-bold px-3 py-2 bg-white text-base cursor-pointer shadow-sm" title="Menu">⋮</button>
-                <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 card-custom bg-white shadow-xl z-50 py-2 border border-gray-200">
+                <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-52 card-custom bg-white shadow-xl z-50 py-2 border border-gray-200">
+                    <button onclick="openDashboardModal()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 font-semibold text-emerald-600 flex items-center justify-between">
+                        <span>Dashboard Ringkasan</span>
+                        <span>➔</span>
+                    </button>
+                    <div class="border-t border-gray-100 my-1"></div>
                     <div class="px-3 py-1 text-[10px] font-bold uppercase accent-color">Tema</div>
                     <button onclick="changeThemeOption('theme-latte'); toggleMenu();" class="w-full text-left px-3 py-1 text-xs hover:bg-gray-100">Latte</button>
                     <button onclick="changeThemeOption('theme-forest'); toggleMenu();" class="w-full text-left px-3 py-1 text-xs hover:bg-gray-100">Forest</button>
@@ -103,17 +114,27 @@
     </header>
 
     <!-- TOP GRID: SISA ANGARAN & CHARTS -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div class="card-custom p-5 flex flex-col justify-between">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-3">
+        <div class="card-custom p-5 flex flex-col justify-between relative">
             <div>
-                <h3 class="text-[11px] font-semibold accent-color tracking-wide uppercase">Sisa Anggaran</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-[11px] font-semibold accent-color tracking-wide uppercase">Total Sisa Saldo Berjalan</h3>
+                    <div class="relative group cursor-pointer">
+                        <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full" title="Info Saldo">!</span>
+                        <div class="absolute right-0 bottom-6 hidden group-hover:block w-64 card-custom bg-white p-3 text-[11px] shadow-xl z-50 border border-gray-200">
+                            <p class="font-bold mb-1">Simpulan Saldo Kumulatif:</p>
+                            <p id="prevBalanceInfo" class="text-gray-600 mb-2">Memuat data akumulasi...</p>
+                            <p class="text-[10px] italic text-gray-400">Saldo ini otomatis berjalan terus dari bulan/tahun sebelumnya.</p>
+                        </div>
+                    </div>
+                </div>
                 <p id="remainingBudget" class="text-3xl font-extrabold mt-1">Rp0</p>
                 <div class="mt-2">
                     <span id="budgetPercentage" class="inline-block bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">0% Tersisa</span>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-gray-200 text-xs accent-color flex justify-between items-center">
-                <span>Status:</span>
+                <span>Status Keuangan:</span>
                 <strong id="budgetStatus" class="font-bold">Aman</strong>
             </div>
         </div>
@@ -130,8 +151,18 @@
         </div>
     </div>
 
+    <!-- KONTROL KEUANGAN KUMULATIF BERJALAN -->
+    <div class="card-custom px-4 py-2.5 mb-6 bg-white flex flex-wrap justify-between items-center text-xs gap-3">
+        <span class="font-bold accent-color uppercase text-[10px] tracking-wider">Kontrol Saldo Akumulasi:</span>
+        <div class="flex flex-wrap gap-4 text-right">
+            <div><span class="text-gray-400 text-[11px]">Sisa Periode Lalu:</span> <strong id="annualPrevBalance" class="text-gray-700 dark:text-gray-200">Rp0</strong></div>
+            <div><span class="text-gray-400 text-[11px]">Arus Net Bulan Ini:</span> <strong id="annualCurrentNet" class="text-gray-700 dark:text-gray-200">Rp0</strong></div>
+            <div><span class="text-gray-400 text-[11px]">Total Saldo Akhir:</span> <strong id="annualTotalBalance" class="font-extrabold text-emerald-600">Rp0</strong></div>
+        </div>
+    </div>
+
     <!-- 1. SECTION PALING ATAS: PENCATATAN HARIAN -->
-    <div class="card-custom p-5 mb-6" id="section-daily">
+    <div class="card-custom p-5 mb-3" id="section-daily">
         <div class="flex justify-between items-center mb-3">
             <div>
                 <h3 class="font-bold text-base">Pencatatan Harian</h3>
@@ -159,6 +190,13 @@
         </div>
     </div>
 
+    <!-- TOMBOL REALISASI INSTANT (TEPAT DI BAWAH PENCATATAN HARIAN) -->
+    <div class="mb-6">
+        <button onclick="openInstantModal()" class="btn-instant w-full text-center shadow-sm">
+            + Realisasi Instant (Isi Penuh Target Kategori)
+        </button>
+    </div>
+
     <!-- SEKAT / DIVIDER DENGAN TULISAN "KATEGORI" -->
     <div class="flex items-center my-6">
         <div class="flex-grow border-t border-gray-300 dark:border-zinc-700"></div>
@@ -166,10 +204,10 @@
         <div class="flex-grow border-t border-gray-300 dark:border-zinc-700"></div>
     </div>
 
-    <!-- 2. SECTION BAWAH: 2 KOLOM (4 OPSI KATEGORI) -->
+    <!-- 2. SECTION BAWAH: 2 KOLOM -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         
-        <!-- KOLOM KIRI -->
+        <!-- KOLOM KIRI (BUDGETING) -->
         <div class="space-y-6">
             <!-- Pemasukan -->
             <div class="card-custom p-5" id="section-income">
@@ -220,7 +258,7 @@
             </div>
         </div>
 
-        <!-- KOLOM KANAN -->
+        <!-- KOLOM KANAN (TABUNGAN & TAGIHAN) -->
         <div class="space-y-6">
             <!-- Tabungan -->
             <div class="card-custom p-5" id="section-saving">
@@ -278,7 +316,7 @@
         <a href="https://www.instagram.com/falenelaf_?igsi=MWgzMXIzNGxqNzUydg%3D%3D&utm_source=qr" target="_blank" class="text-[10px] tracking-widest text-gray-400 opacity-40 hover:opacity-100 transition select-none">made by @falenelaf</a>
     </footer>
 
-    <!-- MODAL INPUT DATA -->
+    <!-- MODAL INPUT DATA (BIASA) -->
     <div id="dataModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="card-custom bg-white p-5 w-full max-w-sm shadow-2xl">
             <h3 id="modalTitle" class="font-bold text-base mb-3">Tambah Data</h3>
@@ -286,7 +324,8 @@
                 <input type="hidden" id="modalType">
                 <div>
                     <label class="block text-[11px] font-semibold accent-color mb-1" id="labelName">Nama</label>
-                    <input type="text" id="inputName" required class="input-custom text-sm">
+                    <input type="text" id="inputName" list="nameSuggestions" required class="input-custom text-sm" autocomplete="off">
+                    <datalist id="nameSuggestions"></datalist>
                 </div>
                 <div id="targetFieldGroup">
                     <label class="block text-[11px] font-semibold accent-color mb-1" id="labelTarget">Target / Jumlah (Rp)</label>
@@ -317,6 +356,82 @@
         </div>
     </div>
 
+    <!-- MODAL REALISASI INSTANT -->
+    <div id="instantModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="card-custom bg-white p-5 w-full max-w-sm shadow-2xl">
+            <h3 class="font-bold text-base mb-2">Realisasi Target Instant</h3>
+            <p class="text-[11px] text-gray-500 mb-4">Pilih kategori yang ingin langsung dipenuhi (100% full target) hari ini.</p>
+            <form onsubmit="handleInstantSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-semibold accent-color mb-1">Pilih Kategori Target</label>
+                    <select id="instantCategorySelect" onchange="updateInstantDetails()" required class="input-custom text-sm cursor-pointer"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold accent-color mb-1">Keterangan Transaksi</label>
+                    <input type="text" id="instantName" required class="input-custom text-sm" placeholder="Misal: Realisasi Gaji">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold accent-color mb-1">Nominal Target (Rp)</label>
+                    <input type="number" id="instantAmount" required class="input-custom text-sm font-bold text-emerald-600 bg-gray-50">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeInstantModal()" class="px-3 py-1.5 rounded-xl text-xs bg-gray-200 text-gray-800 font-medium">Batal</button>
+                    <button type="submit" class="btn-primary text-xs">Realisasi Sekarang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DASHBOARD RINGKASAN LENGKAP -->
+    <div id="dashboardModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="card-custom bg-white p-6 w-full max-w-lg shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+                <div>
+                    <h3 class="font-bold text-lg">Dashboard Laporan Finansial</h3>
+                    <p class="text-xs text-gray-500">Ringkasan menyeluruh posisi keuangan bulan ini.</p>
+                </div>
+                <button onclick="closeDashboardModal()" class="text-gray-400 hover:text-gray-600 text-sm font-bold">✕</button>
+            </div>
+
+            <!-- 1. Posisi Uang & Saldo -->
+            <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-xl mb-4 space-y-2">
+                <span class="text-[10px] font-bold uppercase accent-color block">Posisi Kas & Saldo Akumulasi</span>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-500">Pemasukan Bulan Ini:</span> <p id="dashTotalIncome" class="font-bold text-sm text-emerald-600">Rp0</p></div>
+                    <div><span class="text-gray-500">Saldo Akumulasi Lalu:</span> <p id="dashPrevBalance" class="font-bold text-sm text-blue-600">Rp0</p></div>
+                    <div><span class="text-gray-500">Pengeluaran Bulan Ini:</span> <p id="dashTotalExp" class="font-semibold text-red-400">Rp0</p></div>
+                    <div><span class="text-gray-500">Tabungan & Tagihan:</span> <p id="dashTotalSavBill" class="font-semibold text-amber-600">Rp0</p></div>
+                    <div class="col-span-2 pt-2 border-t border-gray-200 dark:border-zinc-700">
+                        <span class="text-gray-500 font-semibold">Total Sisa Saldo Berjalan:</span>
+                        <p id="dashRemaining" class="font-extrabold text-base text-gray-800 dark:text-white">Rp0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Rincian Pengeluaran -->
+            <div class="mb-4">
+                <span class="text-[10px] font-bold uppercase accent-color block mb-1">Rincian Pengeluaran Bulan Ini</span>
+                <div id="dashExpenseList" class="space-y-1 text-xs"></div>
+            </div>
+
+            <!-- 3. Rincian Tagihan -->
+            <div class="mb-4">
+                <span class="text-[10px] font-bold uppercase accent-color block mb-1">Status Tagihan Berjalan</span>
+                <div id="dashBillList" class="space-y-1 text-xs"></div>
+            </div>
+
+            <!-- 4. Rincian Tabungan -->
+            <div class="mb-4">
+                <span class="text-[10px] font-bold uppercase accent-color block mb-1">Progres Tabungan & Aset Berjalan</span>
+                <div id="dashSavingList" class="space-y-2 text-xs"></div>
+            </div>
+
+            <div class="text-right pt-2 border-t border-gray-100">
+                <button onclick="closeDashboardModal()" class="btn-primary text-xs">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL KONFIRMASI GANTI BULAN -->
     <div id="changePeriodModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="card-custom bg-white p-5 w-full max-w-xs shadow-2xl text-center">
@@ -334,7 +449,7 @@
     <div id="resetModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="card-custom bg-white p-5 w-full max-w-xs shadow-2xl text-center">
             <h3 class="font-bold text-base mb-1">Reset Bulan Ini?</h3>
-            <p class="text-[11px] text-gray-600 mb-4">Semua data pada bulan ini akan dikosongkan permanen.</p>
+            <p class="text-[11px] text-gray-600 mb-4">Catatan transaksi harian bulan ini akan direset (kembali 0). Kategori budgeting, tabungan, dan tagihan tetap aman tersimpan.</p>
             <div class="flex justify-center gap-2">
                 <button onclick="closeResetModal()" class="px-3 py-1.5 rounded-xl text-xs bg-gray-200 text-gray-800 font-medium">Batal</button>
                 <button onclick="executeAllReset()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">Ya, Reset</button>
@@ -398,12 +513,81 @@
             return `financial_planner_${y}_${m}`;
         }
 
+        function getPriorCumulativeBalance(targetMonth, targetYear) {
+            const targetPeriodValue = parseInt(targetYear) * 12 + parseInt(targetMonth);
+            let totalPriorNet = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('financial_planner_')) {
+                    const parts = key.replace('financial_planner_', '').split('_');
+                    if (parts.length === 2) {
+                        const y = parseInt(parts[0]);
+                        const m = parseInt(parts[1]);
+                        const periodValue = y * 12 + m;
+                        
+                        if (periodValue < targetPeriodValue) {
+                            try {
+                                const d = JSON.parse(localStorage.getItem(key));
+                                const daily = d.daily || [];
+                                const inc = daily.filter(x => x.type === 'income').reduce((s, x) => s + Number(x.amount || 0), 0);
+                                const exp = daily.filter(x => x.type === 'expense').reduce((s, x) => s + Number(x.amount || 0), 0);
+                                const sav = daily.filter(x => x.type === 'saving').reduce((s, x) => s + Number(x.amount || 0), 0);
+                                const bill = daily.filter(x => x.type === 'bill').reduce((s, x) => s + Number(x.amount || 0), 0);
+                                totalPriorNet += (inc - (exp + sav + bill));
+                            } catch (e) {}
+                        }
+                    }
+                }
+            }
+            return totalPriorNet;
+        }
+
+        function getMonthName(mStr) {
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            return monthNames[parseInt(mStr) - 1] || mStr;
+        }
+
         function loadData(m, y) {
             const saved = localStorage.getItem(getStorageKey(m, y));
-            appData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialDefaultData));
+            if (saved) {
+                appData = JSON.parse(saved);
+            } else {
+                let prevDataClean = { income: [], expense: [], saving: [], bill: [], daily: [] };
+                
+                let allKeys = Object.keys(localStorage)
+                    .filter(k => k.startsWith('financial_planner_'))
+                    .sort();
+                
+                if (allKeys.length > 0) {
+                    let lastSaved = JSON.parse(localStorage.getItem(allKeys[allKeys.length - 1]));
+                    prevDataClean.income = (lastSaved.income || []).map(i => ({ ...i }));
+                    prevDataClean.expense = (lastSaved.expense || []).map(e => ({ ...e }));
+                    prevDataClean.saving = (lastSaved.saving || []).map(s => ({ ...s }));
+                    prevDataClean.bill = (lastSaved.bill || []).map(b => ({ ...b }));
+                }
+                
+                appData = prevDataClean;
+            }
+
             if (!appData.daily) appData.daily = [];
             if (!appData.saving) appData.saving = [];
             if (!appData.bill) appData.bill = [];
+            if (!appData.income) appData.income = [];
+            if (!appData.expense) appData.expense = [];
+        }
+
+        function syncCategoriesToAllStorage(type, list) {
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('financial_planner_')) {
+                    try {
+                        let itemData = JSON.parse(localStorage.getItem(key));
+                        itemData[type] = list;
+                        localStorage.setItem(key, JSON.stringify(itemData));
+                    } catch(e) {}
+                }
+            }
         }
 
         function saveData() {
@@ -452,12 +636,81 @@
             renderBillTable();
             renderDailyTable();
             updateSummaryAndCharts();
+            updatePrevBalanceTooltip();
+            updateSuggestions();
+            updateAnnualControlSection();
+        }
+
+        function updatePrevBalanceTooltip() {
+            const priorBalance = getPriorCumulativeBalance(currentMonth, currentYear);
+            const infoEl = document.getElementById('prevBalanceInfo');
+            if (priorBalance !== 0) {
+                infoEl.innerText = `Sisa saldo akumulasi dari periode sebelum ${getMonthName(currentMonth)} ${currentYear}: ${formatRupiah(priorBalance)}.`;
+            } else {
+                infoEl.innerText = "Belum ada saldo akumulasi dari periode sebelumnya.";
+            }
+        }
+
+        function updateAnnualControlSection() {
+            const priorBalance = getPriorCumulativeBalance(currentMonth, currentYear);
+            const thisMonthInc = appData.daily.filter(i => i.type === 'income').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthExp = appData.daily.filter(i => i.type === 'expense').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthSav = appData.daily.filter(i => i.type === 'saving').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthBill = appData.daily.filter(i => i.type === 'bill').reduce((sum, i) => sum + Number(i.amount), 0);
+            
+            const currentNet = thisMonthInc - (thisMonthExp + thisMonthSav + thisMonthBill);
+            const grandTotal = priorBalance + currentNet;
+
+            document.getElementById('annualPrevBalance').innerText = formatRupiah(priorBalance);
+            document.getElementById('annualCurrentNet').innerText = formatRupiah(currentNet);
+            document.getElementById('annualTotalBalance').innerText = formatRupiah(grandTotal);
+        }
+
+        function updateSuggestions() {
+            let datalist = document.getElementById('nameSuggestions');
+            datalist.innerHTML = '';
+            
+            let uniqueNames = new Set();
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('financial_planner_')) {
+                    try {
+                        let d = JSON.parse(localStorage.getItem(key));
+                        if (d.income) d.income.forEach(item => uniqueNames.add(item.name));
+                        if (d.expense) d.expense.forEach(item => uniqueNames.add(item.name));
+                        if (d.saving) d.saving.forEach(item => uniqueNames.add(item.name));
+                        if (d.bill) d.bill.forEach(item => uniqueNames.add(item.name));
+                        if (d.daily) d.daily.forEach(item => uniqueNames.add(item.name));
+                    } catch(e) {}
+                }
+            }
+
+            uniqueNames.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                datalist.appendChild(opt);
+            });
         }
 
         function getActualForCategory(categoryName, type) {
-            return appData.daily
-                .filter(item => item.type === type && item.category === categoryName)
-                .reduce((sum, i) => sum + Number(i.amount), 0);
+            if (type === 'income' || type === 'expense') {
+                return appData.daily
+                    .filter(item => item.type === type && item.category === categoryName)
+                    .reduce((sum, i) => sum + Number(i.amount), 0);
+            } else {
+                let totalOngoing = 0;
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    if (key.startsWith('financial_planner_')) {
+                        try {
+                            let d = JSON.parse(localStorage.getItem(key));
+                            let logs = (d.daily || []).filter(item => item.type === type && item.category === categoryName);
+                            totalOngoing += logs.reduce((sum, i) => sum + Number(i.amount), 0);
+                        } catch(e) {}
+                    }
+                }
+                return totalOngoing;
+            }
         }
 
         function renderIncomeTable() {
@@ -559,18 +812,23 @@
         }
 
         function updateSummaryAndCharts() {
-            const totalInc = appData.daily.filter(i => i.type === 'income').reduce((sum, i) => sum + Number(i.amount), 0);
-            const totalExp = appData.daily.filter(i => i.type === 'expense').reduce((sum, i) => sum + Number(i.amount), 0);
-            const totalSav = appData.daily.filter(i => i.type === 'saving').reduce((sum, i) => sum + Number(i.amount), 0);
-            const totalBill = appData.daily.filter(i => i.type === 'bill').reduce((sum, i) => sum + Number(i.amount), 0);
+            const priorBalance = getPriorCumulativeBalance(currentMonth, currentYear);
+            
+            const thisMonthInc = appData.daily.filter(i => i.type === 'income').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthExp = appData.daily.filter(i => i.type === 'expense').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthSav = appData.daily.filter(i => i.type === 'saving').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthBill = appData.daily.filter(i => i.type === 'bill').reduce((sum, i) => sum + Number(i.amount), 0);
 
-            document.getElementById('headerTotalIncome').innerText = formatRupiah(totalInc);
-            document.getElementById('headerTotalExpense').innerText = formatRupiah(totalExp);
+            const totalAvailable = priorBalance + thisMonthInc;
+            const totalOutThisMonth = thisMonthExp + thisMonthSav + thisMonthBill;
+            const remaining = totalAvailable - totalOutThisMonth;
 
-            const remaining = totalInc - (totalExp + totalSav + totalBill);
+            document.getElementById('headerTotalIncome').innerText = formatRupiah(thisMonthInc);
+            document.getElementById('headerTotalExpense').innerText = formatRupiah(thisMonthExp);
+
             document.getElementById('remainingBudget').innerText = formatRupiah(remaining);
 
-            const percent = totalInc > 0 ? ((remaining / totalInc) * 100).toFixed(1) : 0;
+            const percent = totalAvailable > 0 ? ((remaining / totalAvailable) * 100).toFixed(1) : 0;
             document.getElementById('budgetPercentage').innerText = `${percent}% Tersisa`;
 
             const statusEl = document.getElementById('budgetStatus');
@@ -578,7 +836,7 @@
             if (remaining < 0) {
                 statusEl.innerText = "Defisit";
                 statusEl.className = "font-bold text-red-500";
-            } else if (percentNum <= 15) {
+            } else if (percentNum <= 15 && totalAvailable > 0) {
                 statusEl.innerText = "Waspada";
                 statusEl.className = "font-bold text-amber-500";
             } else {
@@ -589,7 +847,7 @@
             const planInc = appData.income.reduce((sum, i) => sum + Number(i.target), 0);
             const planExp = appData.expense.reduce((sum, i) => sum + Number(i.target), 0);
 
-            updateCharts(planInc, totalInc, planExp, totalExp, totalSav, totalBill);
+            updateCharts(planInc, thisMonthInc, planExp, thisMonthExp, thisMonthSav, thisMonthBill);
         }
 
         function updateCharts(planInc, actInc, planExp, actExp, sav, bill) {
@@ -657,6 +915,7 @@
             document.getElementById('dataModal').classList.remove('hidden');
             document.getElementById('modalType').value = type;
             document.getElementById('dataForm').reset();
+            updateSuggestions();
 
             const targetGroup = document.getElementById('targetFieldGroup');
             const dateGroup = document.getElementById('dateFieldGroup');
@@ -693,6 +952,168 @@
             document.getElementById('dataModal').classList.add('hidden');
         }
 
+        function openInstantModal() {
+            document.getElementById('instantModal').classList.remove('hidden');
+            const select = document.getElementById('instantCategorySelect');
+            select.innerHTML = '';
+            
+            let allCategories = [];
+            appData.income.forEach(c => allCategories.push({ ...c, group: 'Pemasukan', type: 'income' }));
+            appData.expense.forEach(c => allCategories.push({ ...c, group: 'Pengeluaran', type: 'expense' }));
+            appData.saving.forEach(c => allCategories.push({ ...c, group: 'Tabungan', type: 'saving' }));
+            appData.bill.forEach(c => allCategories.push({ ...c, group: 'Tagihan', type: 'bill' }));
+
+            if (allCategories.length === 0) {
+                select.innerHTML = '<option value="">-- Belum ada kategori yang dibuat di bawah --</option>';
+                document.getElementById('instantAmount').value = 0;
+                document.getElementById('instantName').value = '';
+                return;
+            }
+
+            allCategories.forEach((cat, idx) => {
+                const actual = getActualForCategory(cat.name, cat.type);
+                const remaining = Math.max(0, cat.target - actual);
+                select.innerHTML += `<option value="${idx}">${cat.group}: ${cat.name} (Sisa Target: ${formatRupiah(remaining)})</option>`;
+            });
+
+            window.instantCategoriesCache = allCategories;
+            updateInstantDetails();
+        }
+
+        function updateInstantDetails() {
+            const select = document.getElementById('instantCategorySelect');
+            const idx = select.value;
+            if (idx === "" || !window.instantCategoriesCache || !window.instantCategoriesCache[idx]) return;
+            
+            const cat = window.instantCategoriesCache[idx];
+            const actual = getActualForCategory(cat.name, cat.type);
+            const remaining = Math.max(0, cat.target - actual);
+            
+            document.getElementById('instantName').value = `Realisasi ${cat.name}`;
+            document.getElementById('instantAmount').value = remaining > 0 ? remaining : cat.target;
+        }
+
+        function closeInstantModal() {
+            document.getElementById('instantModal').classList.add('hidden');
+        }
+
+        function handleInstantSubmit(event) {
+            event.preventDefault();
+            const select = document.getElementById('instantCategorySelect');
+            const idx = select.value;
+            if (idx === "" || !window.instantCategoriesCache || !window.instantCategoriesCache[idx]) {
+                alert('Pilih kategori yang valid!');
+                return;
+            }
+            
+            const cat = window.instantCategoriesCache[idx];
+            const name = document.getElementById('instantName').value;
+            const amount = Number(document.getElementById('instantAmount').value);
+            const date = new Date().toISOString().split('T')[0];
+
+            appData.daily.push({
+                id: Date.now(),
+                date: date,
+                name: name,
+                amount: amount,
+                type: cat.type,
+                category: cat.name
+            });
+
+            saveData();
+            closeInstantModal();
+        }
+
+        function openDashboardModal() {
+            toggleMenu();
+            const modal = document.getElementById('dashboardModal');
+            modal.classList.remove('hidden');
+
+            const priorBalance = getPriorCumulativeBalance(currentMonth, currentYear);
+            const thisMonthInc = appData.daily.filter(i => i.type === 'income').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthExp = appData.daily.filter(i => i.type === 'expense').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthSav = appData.daily.filter(i => i.type === 'saving').reduce((sum, i) => sum + Number(i.amount), 0);
+            const thisMonthBill = appData.daily.filter(i => i.type === 'bill').reduce((sum, i) => sum + Number(i.amount), 0);
+            const totalAvailable = priorBalance + thisMonthInc;
+            const totalOutThisMonth = thisMonthExp + thisMonthSav + thisMonthBill;
+            const remaining = totalAvailable - totalOutThisMonth;
+
+            document.getElementById('dashTotalIncome').innerText = formatRupiah(thisMonthInc);
+            document.getElementById('dashPrevBalance').innerText = formatRupiah(priorBalance);
+            document.getElementById('dashTotalExp').innerText = formatRupiah(thisMonthExp);
+            document.getElementById('dashTotalSavBill').innerText = formatRupiah(thisMonthSav + thisMonthBill);
+            document.getElementById('dashRemaining').innerText = formatRupiah(remaining);
+
+            const expList = document.getElementById('dashExpenseList');
+            expList.innerHTML = '';
+            if (appData.expense.length === 0) {
+                expList.innerHTML = '<p class="text-xs text-gray-400 py-1">Belum ada kategori pengeluaran.</p>';
+            } else {
+                appData.expense.forEach(cat => {
+                    const act = getActualForCategory(cat.name, 'expense');
+                    const pct = thisMonthExp > 0 ? ((act / thisMonthExp) * 100).toFixed(0) : 0;
+                    expList.innerHTML += `
+                        <div class="flex justify-between items-center py-1 border-b border-gray-100 dark:border-zinc-800">
+                            <span class="font-medium">${cat.name}</span>
+                            <div class="text-right">
+                                <span class="font-semibold text-red-500">${formatRupiah(act)}</span>
+                                <span class="text-[10px] text-gray-400 ml-1">(${pct}%)</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const billList = document.getElementById('dashBillList');
+            billList.innerHTML = '';
+            if (appData.bill.length === 0) {
+                billList.innerHTML = '<p class="text-xs text-gray-400 py-1">Belum ada target tagihan.</p>';
+            } else {
+                appData.bill.forEach(b => {
+                    const act = getActualForCategory(b.name, 'bill');
+                    const sisa = Math.max(0, b.target - act);
+                    const isPaid = act >= b.target;
+                    billList.innerHTML += `
+                        <div class="flex justify-between items-center py-1 border-b border-gray-100 dark:border-zinc-800">
+                            <div>
+                                <span class="font-medium">${b.name}</span>
+                                <span class="text-[10px] block ${isPaid ? 'text-emerald-500' : 'text-amber-500'} font-semibold">
+                                    ${isPaid ? 'Lunas' : 'Sisa Tagihan: ' + formatRupiah(sisa)}
+                                </span>
+                            </div>
+                            <span class="text-xs text-gray-600">${formatRupiah(act)} / ${formatRupiah(b.target)}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            const savList = document.getElementById('dashSavingList');
+            savList.innerHTML = '';
+            if (appData.saving.length === 0) {
+                savList.innerHTML = '<p class="text-xs text-gray-400 py-1">Belum ada target tabungan.</p>';
+            } else {
+                appData.saving.forEach(s => {
+                    const act = getActualForCategory(s.name, 'saving');
+                    const pct = s.target > 0 ? Math.min(100, ((act / s.target) * 100).toFixed(0)) : 0;
+                    savList.innerHTML += `
+                        <div class="py-1 border-b border-gray-100 dark:border-zinc-800">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">${s.name}</span>
+                                <span class="font-semibold text-emerald-600">${formatRupiah(act)} / ${formatRupiah(s.target)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mt-1 overflow-hidden">
+                                <div class="bg-emerald-500 h-full rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function closeDashboardModal() {
+            document.getElementById('dashboardModal').classList.add('hidden');
+        }
+
         function handleFormSubmit(event) {
             event.preventDefault();
             const type = document.getElementById('modalType').value;
@@ -701,6 +1122,7 @@
             if (type === 'income' || type === 'expense' || type === 'saving' || type === 'bill') {
                 const target = Number(document.getElementById('inputTarget').value);
                 appData[type].push({ id: Date.now(), name, target });
+                syncCategoriesToAllStorage(type, appData[type]);
             } else if (type === 'daily') {
                 const amount = Number(document.getElementById('inputTarget').value);
                 const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
@@ -726,6 +1148,9 @@
 
         function deleteItem(type, id) {
             appData[type] = appData[type].filter(item => item.id !== id);
+            if (type !== 'daily') {
+                syncCategoriesToAllStorage(type, appData[type]);
+            }
             saveData();
         }
 
@@ -738,8 +1163,7 @@
         }
 
         function executeAllReset() {
-            appData = JSON.parse(JSON.stringify(initialDefaultData));
-            appData.daily = []; appData.saving = []; appData.bill = [];
+            appData.daily = [];
             saveData();
             closeResetModal();
         }
