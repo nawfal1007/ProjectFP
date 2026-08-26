@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Planner</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; transition: background 0.3s, color 0.3s; }
+        .card-custom { border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); transition: all 0.3s ease; }
+        .input-custom { border-radius: 0.75rem; padding: 0.5rem 0.75rem; outline: none; transition: all 0.2s; font-size: 0.875rem; width: 100%; }
+        .strikethrough { text-decoration: line-through; opacity: 0.5; }
+
+        /* THEME: Latte (Warm Earth) - Default */
+        body.theme-latte { background-color: #F7F4EF; color: #3D312A; }
+        body.theme-latte .card-custom { background: #FFFFFF; border: 1px solid #E6DFD5; }
+        body.theme-latte .header-box { background: #EFECE6; border: 1px solid #E2DAD0; }
+        body.theme-latte .input-custom { background: #FAF8F5; border: 1px solid #E6DFD5; color: #3D312A; }
+        body.theme-latte .input-custom:focus { border-color: #8C7A6B; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(140, 122, 107, 0.1); }
+        body.theme-latte .btn-primary { background: #4A3B32; color: #FFFFFF; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 500; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
+        body.theme-latte .btn-primary:hover { background: #3D312A; }
+        body.theme-latte .accent-color { color: #8C7A6B; }
+
+        /* THEME: Forest Green (Calm Nature) */
+        body.theme-forest { background-color: #F2F5F3; color: #233529; }
+        body.theme-forest .card-custom { background: #FFFFFF; border: 1px solid #D5E2DB; }
+        body.theme-forest .header-box { background: #E4ECE7; border: 1px solid #CCE0D5; }
+        body.theme-forest .input-custom { background: #F8FBF9; border: 1px solid #D5E2DB; color: #233529; }
+        body.theme-forest .input-custom:focus { border-color: #4A7C59; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1); }
+        body.theme-forest .btn-primary { background: #3B5E4B; color: #FFFFFF; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 500; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
+        body.theme-forest .btn-primary:hover { background: #2E4A3B; }
+        body.theme-forest .accent-color { color: #4A7C59; }
+
+        /* THEME: Dark Espresso (Midnight Mode) */
+        body.theme-dark { background-color: #1A1816; color: #EFECE6; }
+        body.theme-dark .card-custom { background: #24211E; border: 1px solid #36312D; }
+        body.theme-dark .header-box { background: #2D2925; border: 1px solid #3F3935; }
+        body.theme-dark .input-custom { background: #1A1816; border: 1px solid #3F3935; color: #EFECE6; }
+        body.theme-dark .input-custom:focus { border-color: #C2B4A3; background: #24211E; box-shadow: 0 0 0 3px rgba(194, 180, 163, 0.1); }
+        body.theme-dark .btn-primary { background: #C2B4A3; color: #1A1816; border-radius: 0.5rem; padding: 0.35rem 0.75rem; font-weight: 600; font-size: 0.75rem; white-space: nowrap; transition: background 0.2s; }
+        body.theme-dark .btn-primary:hover { background: #D5CCC2; }
+        body.theme-dark .accent-color { color: #C2B4A3; }
+        body.theme-dark table th { color: #C2B4A3 !important; border-bottom-color: #3F3935 !important; }
+        body.theme-dark table td { border-color: #332E2A !important; }
+        body.theme-dark .bg-white { background-color: #2D2925 !important; color: #EFECE6 !important; border-color: #3F3935 !important; }
+        body.theme-dark .text-gray-600 { color: #B0A8A0 !important; }
+    </style>
+</head>
+<body class="p-3 md:p-6 max-w-7xl mx-auto theme-latte" id="bodyTheme">
+
+    <!-- HEADER & CONTROLS -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 header-box p-4 rounded-2xl gap-3">
+        <div class="flex items-center justify-between w-full md:w-auto">
+            <div>
+                <span class="text-[10px] font-bold tracking-wider uppercase accent-color block">Financial Planner</span>
+                <div class="flex items-center gap-2 mt-1">
+                    <select id="selectMonth" onchange="promptChangePeriod()" class="input-custom font-bold text-base py-1 px-2 cursor-pointer w-auto">
+                        <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
+                        <option value="04">Apr</option><option value="05">Mei</option><option value="06">Jun</option>
+                        <option value="07" selected>Jul</option><option value="08">Agu</option><option value="09">Sep</option>
+                        <option value="10">Okt</option><option value="11">Nov</option><option value="12">Des</option>
+                    </select>
+                    <select id="selectYear" onchange="promptChangePeriod()" class="input-custom font-bold text-base py-1 px-2 cursor-pointer w-auto">
+                        <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option>
+                        <option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 justify-between w-full md:w-auto">
+            <div class="bg-white px-3 py-1.5 rounded-xl shadow-sm flex-1 md:flex-initial">
+                <p class="text-[10px] accent-color font-medium">Pemasukan</p>
+                <p id="headerTotalIncome" class="text-sm font-bold">Rp0</p>
+            </div>
+            <div class="bg-white px-3 py-1.5 rounded-xl shadow-sm flex-1 md:flex-initial">
+                <p class="text-[10px] accent-color font-medium">Pengeluaran</p>
+                <p id="headerTotalExpense" class="text-sm font-bold text-red-400">Rp0</p>
+            </div>
+
+            <!-- MENU DROPDOWN TITIK TIGA (⋮) -->
+            <div class="relative">
+                <button onclick="toggleMenu()" class="input-custom font-bold px-3 py-2 bg-white text-base cursor-pointer shadow-sm" title="Menu">⋮</button>
+                <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 card-custom bg-white shadow-xl z-50 py-2 border border-gray-200">
+                    <div class="px-3 py-1 text-[10px] font-bold uppercase accent-color">Tema</div>
+                    <button onclick="changeThemeOption('theme-latte'); toggleMenu();" class="w-full text-left px-3 py-1 text-xs hover:bg-gray-100">Latte</button>
+                    <button onclick="changeThemeOption('theme-forest'); toggleMenu();" class="w-full text-left px-3 py-1 text-xs hover:bg-gray-100">Forest</button>
+                    <button onclick="changeThemeOption('theme-dark'); toggleMenu();" class="w-full text-left px-3 py-1 text-xs hover:bg-gray-100">Dark</button>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button onclick="triggerImport()" class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 font-medium">Import JSON</button>
+                    <button onclick="backupData(); toggleMenu();" class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 font-medium">Backup JSON</button>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button onclick="openResetModal(); toggleMenu();" class="w-full text-left px-3 py-1.5 text-xs text-red-600 font-medium">Reset Bulan</button>
+                </div>
+            </div>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+        </div>
+    </header>
+
+    <!-- TOP GRID: SISA ANGARAN & CHARTS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="card-custom p-5 flex flex-col justify-between">
+            <div>
+                <h3 class="text-[11px] font-semibold accent-color tracking-wide uppercase">Sisa Anggaran</h3>
+                <p id="remainingBudget" class="text-3xl font-extrabold mt-1">Rp0</p>
+                <div class="mt-2">
+                    <span id="budgetPercentage" class="inline-block bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">0% Tersisa</span>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-200 text-xs accent-color flex justify-between items-center">
+                <span>Status:</span>
+                <strong id="budgetStatus" class="font-bold">Aman</strong>
+            </div>
+        </div>
+
+        <div class="card-custom p-5 lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <h3 class="text-[11px] font-semibold accent-color uppercase mb-1">Rencana vs Aktual</h3>
+                <div class="h-36"><canvas id="barChart"></canvas></div>
+            </div>
+            <div>
+                <h3 class="text-[11px] font-semibold accent-color uppercase mb-1">Distribusi</h3>
+                <div class="h-36 flex justify-center"><canvas id="pieChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. SECTION PALING ATAS: PENCATATAN HARIAN -->
+    <div class="card-custom p-5 mb-6" id="section-daily">
+        <div class="flex justify-between items-center mb-3">
+            <div>
+                <h3 class="font-bold text-base">Pencatatan Harian</h3>
+                <p class="text-[11px] text-gray-500">Realisasi transaksi harian.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openModal('daily')" class="btn-primary">+ Catat</button>
+                <button onclick="toggleCard('daily')" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-zinc-800 rounded-md" id="btn-daily">▲</button>
+            </div>
+        </div>
+        <div id="content-daily" class="overflow-x-auto max-h-60 overflow-y-auto">
+            <table class="w-full text-left text-xs md:text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 accent-color text-[11px]">
+                        <th class="pb-2">Tanggal</th>
+                        <th class="pb-2">Keterangan</th>
+                        <th class="pb-2">Tipe</th>
+                        <th class="pb-2">Kategori</th>
+                        <th class="pb-2 text-right">Jumlah</th>
+                        <th class="pb-2 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="dailyTableBody" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. SECTION BAWAH: 2 KOLOM -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        
+        <!-- KOLOM KIRI -->
+        <div class="space-y-6">
+            <!-- Pemasukan -->
+            <div class="card-custom p-5" id="section-income">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-base">Pemasukan</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openModal('income')" class="btn-primary">+ Kategori</button>
+                        <button onclick="toggleCard('income')" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-zinc-800 rounded-md" id="btn-income">▲</button>
+                    </div>
+                </div>
+                <div id="content-income" class="overflow-x-auto max-h-52 overflow-y-auto">
+                    <table class="w-full text-left text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 accent-color text-[11px]">
+                                <th class="pb-2">Kategori</th>
+                                <th class="pb-2 text-right">Target</th>
+                                <th class="pb-2 text-right">Aktual</th>
+                                <th class="pb-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomeTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pengeluaran -->
+            <div class="card-custom p-5" id="section-expense">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-base">Pengeluaran</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openModal('expense')" class="btn-primary">+ Kategori</button>
+                        <button onclick="toggleCard('expense')" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-zinc-800 rounded-md" id="btn-expense">▲</button>
+                    </div>
+                </div>
+                <div id="content-expense" class="overflow-x-auto max-h-52 overflow-y-auto">
+                    <table class="w-full text-left text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 accent-color text-[11px]">
+                                <th class="pb-2">Kategori</th>
+                                <th class="pb-2 text-right">Target</th>
+                                <th class="pb-2 text-right">Aktual</th>
+                                <th class="pb-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN -->
+        <div class="space-y-6">
+            <!-- Tabungan -->
+            <div class="card-custom p-5" id="section-saving">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-base">Tabungan</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openModal('saving')" class="btn-primary">+ Aset</button>
+                        <button onclick="toggleCard('saving')" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-zinc-800 rounded-md" id="btn-saving">▲</button>
+                    </div>
+                </div>
+                <div id="content-saving" class="overflow-x-auto max-h-52 overflow-y-auto">
+                    <table class="w-full text-left text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 accent-color text-[11px]">
+                                <th class="pb-2">Nama Aset</th>
+                                <th class="pb-2 text-right">Target</th>
+                                <th class="pb-2 text-right">Terkumpul</th>
+                                <th class="pb-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="savingTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tagihan -->
+            <div class="card-custom p-5" id="section-bill">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-base">Tagihan</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openModal('bill')" class="btn-primary">+ Tagihan</button>
+                        <button onclick="toggleCard('bill')" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-zinc-800 rounded-md" id="btn-bill">▲</button>
+                    </div>
+                </div>
+                <div id="content-bill" class="overflow-x-auto max-h-52 overflow-y-auto">
+                    <table class="w-full text-left text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 accent-color text-[11px]">
+                                <th class="pb-2">Tagihan</th>
+                                <th class="pb-2 text-right">Target</th>
+                                <th class="pb-2 text-right">Terbayar</th>
+                                <th class="pb-2 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- WATERMARK LINK DI BAWAH BANGET -->
+    <footer class="text-center pb-4 pt-2">
+        <a href="https://www.instagram.com/falenelaf_?igsi=MWgzMXIzNGxqNzUydg%3D%3D&utm_source=qr" target="_blank" class="text-[10px] tracking-widest text-gray-400 opacity-40 hover:opacity-100 transition select-none">made by @falenelaf</a>
+    </footer>
+
+    <!-- MODAL INPUT DATA -->
+    <div id="dataModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="card-custom bg-white p-5 w-full max-w-sm shadow-2xl">
+            <h3 id="modalTitle" class="font-bold text-base mb-3">Tambah Data</h3>
+            <form id="dataForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                <input type="hidden" id="modalType">
+                <div>
+                    <label class="block text-[11px] font-semibold accent-color mb-1" id="labelName">Nama</label>
+                    <input type="text" id="inputName" required class="input-custom text-sm">
+                </div>
+                <div id="targetFieldGroup">
+                    <label class="block text-[11px] font-semibold accent-color mb-1" id="labelTarget">Target / Jumlah (Rp)</label>
+                    <input type="number" id="inputTarget" value="0" onclick="this.value=''" onfocus="this.select()" class="input-custom text-sm">
+                </div>
+                <div id="dateFieldGroup" class="hidden">
+                    <label class="block text-[11px] font-semibold accent-color mb-1">Tanggal</label>
+                    <input type="date" id="inputDate" class="input-custom text-sm">
+                </div>
+                <div id="typeFieldGroup" class="hidden">
+                    <label class="block text-[11px] font-semibold accent-color mb-1">Jenis</label>
+                    <select id="inputType" onchange="updateCategoryOptions()" class="input-custom text-sm cursor-pointer">
+                        <option value="expense">Pengeluaran Harian</option>
+                        <option value="income">Pemasukan Harian</option>
+                        <option value="saving">Menabung</option>
+                        <option value="bill">Bayar Tagihan</option>
+                    </select>
+                </div>
+                <div id="categoryFieldGroup" class="hidden">
+                    <label class="block text-[11px] font-semibold accent-color mb-1" id="labelCategorySelect">Pilih Kategori</label>
+                    <select id="inputCategory" class="input-custom text-sm cursor-pointer"></select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-3 py-1.5 rounded-xl text-xs bg-gray-200 text-gray-800 font-medium">Batal</button>
+                    <button type="submit" class="btn-primary text-xs">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI GANTI BULAN -->
+    <div id="changePeriodModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="card-custom bg-white p-5 w-full max-w-xs shadow-2xl text-center">
+            <h3 class="font-bold text-base mb-1">Pindah Periode Bulan?</h3>
+            <p class="text-[11px] text-gray-600 mb-4">Saran: Download backup JSON bulan sebelumnya terlebih dahulu agar data tetap aman dan tersimpan rapi di perangkatmu.</p>
+            <div class="flex flex-col gap-2">
+                <button onclick="backupAndChangePeriod()" class="btn-primary w-full py-2">Download JSON & Pindah</button>
+                <button onclick="confirmChangePeriod(false)" class="px-3 py-2 rounded-xl text-xs bg-gray-200 text-gray-800 font-medium hover:bg-gray-300">Langsung Pindah Tanpa Download</button>
+                <button onclick="closeChangePeriodModal()" class="text-[11px] text-gray-400 hover:text-gray-600 pt-1">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM WARNING MODAL FOR RESET -->
+    <div id="resetModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="card-custom bg-white p-5 w-full max-w-xs shadow-2xl text-center">
+            <h3 class="font-bold text-base mb-1">Reset Bulan Ini?</h3>
+            <p class="text-[11px] text-gray-600 mb-4">Semua data pada bulan ini akan dikosongkan permanen.</p>
+            <div class="flex justify-center gap-2">
+                <button onclick="closeResetModal()" class="px-3 py-1.5 rounded-xl text-xs bg-gray-200 text-gray-800 font-medium">Batal</button>
+                <button onclick="executeAllReset()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">Ya, Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const initialDefaultData = {
+            income: [],
+            expense: [],
+            saving: [],
+            bill: [],
+            daily: []
+        };
+
+        let currentMonth = '07';
+        let currentYear = '2026';
+        let pendingMonth = '07';
+        let pendingYear = '2026';
+        let currentTheme = localStorage.getItem('planner_theme') || 'theme-latte';
+        let appData = {};
+        let barChartInstance = null;
+        let pieChartInstance = null;
+
+        document.getElementById('bodyTheme').className = `p-3 md:p-6 max-w-7xl mx-auto ${currentTheme}`;
+
+        function changeThemeOption(themeName) {
+            currentTheme = themeName;
+            document.getElementById('bodyTheme').className = `p-3 md:p-6 max-w-7xl mx-auto ${currentTheme}`;
+            localStorage.setItem('planner_theme', currentTheme);
+            updateSummaryAndCharts();
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('settingsMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('button') && !event.target.closest('#settingsMenu')) {
+                const m = document.getElementById('settingsMenu');
+                if (m) m.classList.add('hidden');
+            }
+        }
+
+        function toggleCard(cardId) {
+            const content = document.getElementById(`content-${cardId}`);
+            const btn = document.getElementById(`btn-${cardId}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                btn.innerText = '▲';
+            } else {
+                content.classList.add('hidden');
+                btn.innerText = '▼';
+            }
+        }
+
+        function getStorageKey(m, y) {
+            return `financial_planner_${y}_${m}`;
+        }
+
+        function loadData(m, y) {
+            const saved = localStorage.getItem(getStorageKey(m, y));
+            appData = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(initialDefaultData));
+            if (!appData.daily) appData.daily = [];
+            if (!appData.saving) appData.saving = [];
+            if (!appData.bill) appData.bill = [];
+        }
+
+        function saveData() {
+            localStorage.setItem(getStorageKey(currentMonth, currentYear), JSON.stringify(appData));
+            renderAll();
+        }
+
+        function promptChangePeriod() {
+            pendingMonth = document.getElementById('selectMonth').value;
+            pendingYear = document.getElementById('selectYear').value;
+
+            if (pendingMonth === currentMonth && pendingYear === currentYear) return;
+
+            document.getElementById('changePeriodModal').classList.remove('hidden');
+        }
+
+        function closeChangePeriodModal() {
+            document.getElementById('selectMonth').value = currentMonth;
+            document.getElementById('selectYear').value = currentYear;
+            document.getElementById('changePeriodModal').classList.add('hidden');
+        }
+
+        function backupAndChangePeriod() {
+            backupData();
+            confirmChangePeriod(true);
+        }
+
+        function confirmChangePeriod(isBackedUp) {
+            currentMonth = pendingMonth;
+            currentYear = pendingYear;
+            document.getElementById('selectMonth').value = currentMonth;
+            document.getElementById('selectYear').value = currentYear;
+            document.getElementById('changePeriodModal').classList.add('hidden');
+            loadData(currentMonth, currentYear);
+            renderAll();
+        }
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+        }
+
+        function renderAll() {
+            renderIncomeTable();
+            renderExpenseTable();
+            renderSavingTable();
+            renderBillTable();
+            renderDailyTable();
+            updateSummaryAndCharts();
+        }
+
+        function getActualForCategory(categoryName, type) {
+            return appData.daily
+                .filter(item => item.type === type && item.category === categoryName)
+                .reduce((sum, i) => sum + Number(i.amount), 0);
+        }
+
+        function renderIncomeTable() {
+            const tbody = document.getElementById('incomeTableBody');
+            tbody.innerHTML = appData.income.length === 0 ? `<tr><td colspan="4" class="text-center py-3 text-xs text-gray-400">Belum ada data</td></tr>` : '';
+            appData.income.forEach(item => {
+                const actual = getActualForCategory(item.name, 'income');
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 font-medium">${item.name}</td>
+                        <td class="py-2 text-right text-gray-600">${formatRupiah(item.target)}</td>
+                        <td class="py-2 text-right font-semibold text-emerald-600">${formatRupiah(actual)}</td>
+                        <td class="py-2 text-center"><button onclick="deleteItem('income', ${item.id})" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderExpenseTable() {
+            const tbody = document.getElementById('expenseTableBody');
+            tbody.innerHTML = appData.expense.length === 0 ? `<tr><td colspan="4" class="text-center py-3 text-xs text-gray-400">Belum ada data</td></tr>` : '';
+            appData.expense.forEach(item => {
+                const actual = getActualForCategory(item.name, 'expense');
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 font-medium">${item.name}</td>
+                        <td class="py-2 text-right text-gray-600">${formatRupiah(item.target)}</td>
+                        <td class="py-2 text-right font-semibold text-red-400">${formatRupiah(actual)}</td>
+                        <td class="py-2 text-center"><button onclick="deleteItem('expense', ${item.id})" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderSavingTable() {
+            const tbody = document.getElementById('savingTableBody');
+            tbody.innerHTML = appData.saving.length === 0 ? `<tr><td colspan="4" class="text-center py-3 text-xs text-gray-400">Belum ada data</td></tr>` : '';
+            appData.saving.forEach(item => {
+                const actual = getActualForCategory(item.name, 'saving');
+                const isCompleted = actual >= item.target;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 font-medium">${item.name} ${isCompleted ? '✓' : ''}</td>
+                        <td class="py-2 text-right text-gray-600">${formatRupiah(item.target)}</td>
+                        <td class="py-2 text-right font-semibold ${isCompleted ? 'text-emerald-600 font-bold' : ''}">${formatRupiah(actual)}</td>
+                        <td class="py-2 text-center"><button onclick="deleteItem('saving', ${item.id})" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderBillTable() {
+            const tbody = document.getElementById('billTableBody');
+            tbody.innerHTML = appData.bill.length === 0 ? `<tr><td colspan="4" class="text-center py-3 text-xs text-gray-400">Belum ada data</td></tr>` : '';
+            appData.bill.forEach(item => {
+                const actual = getActualForCategory(item.name, 'bill');
+                const isCompleted = actual >= item.target;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 font-medium">${item.name} ${isCompleted ? '✓' : ''}</td>
+                        <td class="py-2 text-right text-gray-600">${formatRupiah(item.target)}</td>
+                        <td class="py-2 text-right font-semibold ${isCompleted ? 'text-emerald-600 font-bold' : ''}">${formatRupiah(actual)}</td>
+                        <td class="py-2 text-center"><button onclick="deleteItem('bill', ${item.id})" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderDailyTable() {
+            const tbody = document.getElementById('dailyTableBody');
+            tbody.innerHTML = appData.daily.length === 0 ? `<tr><td colspan="6" class="text-center py-3 text-xs text-gray-400">Belum ada transaksi</td></tr>` : '';
+            appData.daily.forEach(item => {
+                const isIncome = item.type === 'income';
+                const isSaving = item.type === 'saving';
+                const isBill = item.type === 'bill';
+                let badgeClass = 'bg-red-100 text-red-800';
+                let badgeText = 'Keluar';
+                let textClass = 'text-red-400';
+
+                if (isIncome) {
+                    badgeClass = 'bg-emerald-100 text-emerald-800'; badgeText = 'Masuk'; textClass = 'text-emerald-600';
+                } else if (isSaving) {
+                    badgeClass = 'bg-blue-100 text-blue-800'; badgeText = 'Nabung'; textClass = 'text-blue-600';
+                } else if (isBill) {
+                    badgeClass = 'bg-amber-100 text-amber-800'; badgeText = 'Tagihan'; textClass = 'text-amber-600';
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 text-[11px] text-gray-500">${item.date}</td>
+                        <td class="py-2 font-medium">${item.name}</td>
+                        <td class="py-2"><span class="px-2 py-0.5 rounded text-[10px] ${badgeClass}">${badgeText}</span></td>
+                        <td class="py-2 text-[11px] text-gray-600">${item.category || '-'}</td>
+                        <td class="py-2 text-right font-semibold ${textClass}">${formatRupiah(item.amount)}</td>
+                        <td class="py-2 text-center"><button onclick="deleteItem('daily', ${item.id})" class="text-red-400 hover:text-red-600 text-xs font-bold">✕</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateSummaryAndCharts() {
+            const totalInc = appData.daily.filter(i => i.type === 'income').reduce((sum, i) => sum + Number(i.amount), 0);
+            const totalExp = appData.daily.filter(i => i.type === 'expense').reduce((sum, i) => sum + Number(i.amount), 0);
+            const totalSav = appData.daily.filter(i => i.type === 'saving').reduce((sum, i) => sum + Number(i.amount), 0);
+            const totalBill = appData.daily.filter(i => i.type === 'bill').reduce((sum, i) => sum + Number(i.amount), 0);
+
+            document.getElementById('headerTotalIncome').innerText = formatRupiah(totalInc);
+            document.getElementById('headerTotalExpense').innerText = formatRupiah(totalExp);
+
+            const remaining = totalInc - (totalExp + totalSav + totalBill);
+            document.getElementById('remainingBudget').innerText = formatRupiah(remaining);
+
+            const percent = totalInc > 0 ? ((remaining / totalInc) * 100).toFixed(1) : 0;
+            document.getElementById('budgetPercentage').innerText = `${percent}% Tersisa`;
+
+            const statusEl = document.getElementById('budgetStatus');
+            const percentNum = Number(percent);
+            if (remaining < 0) {
+                statusEl.innerText = "Defisit";
+                statusEl.className = "font-bold text-red-500";
+            } else if (percentNum <= 15) {
+                statusEl.innerText = "Waspada";
+                statusEl.className = "font-bold text-amber-500";
+            } else {
+                statusEl.innerText = "Aman";
+                statusEl.className = "font-bold text-emerald-600";
+            }
+
+            const planInc = appData.income.reduce((sum, i) => sum + Number(i.target), 0);
+            const planExp = appData.expense.reduce((sum, i) => sum + Number(i.target), 0);
+
+            updateCharts(planInc, totalInc, planExp, totalExp, totalSav, totalBill);
+        }
+
+        function updateCharts(planInc, actInc, planExp, actExp, sav, bill) {
+            const isDark = currentTheme === 'theme-dark';
+            const gridColor = isDark ? '#3F3935' : '#F2ECE4';
+            const textColor = isDark ? '#EFECE6' : '#3D312A';
+
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran', 'Tabungan', 'Tagihan'],
+                    datasets: [
+                        { label: 'Rencana', data: [planInc, planExp, 0, 0], backgroundColor: isDark ? '#5C534C' : '#D5CCC2', borderRadius: 4 },
+                        { label: 'Aktual', data: [actInc, actExp, sav, bill], backgroundColor: isDark ? '#C2B4A3' : '#4A3B32', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 }, color: textColor } } },
+                    scales: { x: { grid: { display: false }, ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor } } }
+                }
+            });
+
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pengeluaran', 'Tabungan', 'Tagihan'],
+                    datasets: [{
+                        data: [actExp, sav, bill],
+                        backgroundColor: ['#A65D57', '#8C7A6B', '#D5CCC2']
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 8, font: { size: 9 }, color: textColor } } }
+                }
+            });
+        }
+
+        function updateCategoryOptions() {
+            const type = document.getElementById('inputType').value;
+            const categorySelect = document.getElementById('inputCategory');
+            categorySelect.innerHTML = '';
+            
+            let list = [];
+            if (type === 'income') list = appData.income;
+            else if (type === 'expense') list = appData.expense;
+            else if (type === 'saving') list = appData.saving;
+            else if (type === 'bill') list = appData.bill;
+
+            if (list.length === 0) {
+                categorySelect.innerHTML = `<option value="">-- Buat kategori dulu di atas --</option>`;
+            } else {
+                list.forEach(cat => {
+                    categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                });
+            }
+        }
+
+        function openModal(type) {
+            document.getElementById('dataModal').classList.remove('hidden');
+            document.getElementById('modalType').value = type;
+            document.getElementById('dataForm').reset();
+
+            const targetGroup = document.getElementById('targetFieldGroup');
+            const dateGroup = document.getElementById('dateFieldGroup');
+            const typeGroup = document.getElementById('typeFieldGroup');
+            const categoryGroup = document.getElementById('categoryFieldGroup');
+            const targetLabel = document.getElementById('labelTarget');
+            const nameLabel = document.getElementById('labelName');
+
+            targetGroup.classList.add('hidden');
+            dateGroup.classList.add('hidden');
+            typeGroup.classList.add('hidden');
+            categoryGroup.classList.add('hidden');
+
+            if (type === 'income' || type === 'expense' || type === 'saving' || type === 'bill') {
+                targetGroup.classList.remove('hidden');
+                targetLabel.innerText = 'Target / Anggaran (Rp)';
+                if (type === 'income') { nameLabel.innerText = 'Sumber Pemasukan'; document.getElementById('modalTitle').innerText = 'Tambah Pemasukan'; }
+                else if (type === 'expense') { nameLabel.innerText = 'Kategori Pengeluaran'; document.getElementById('modalTitle').innerText = 'Tambah Pengeluaran'; }
+                else if (type === 'saving') { nameLabel.innerText = 'Nama Target Aset'; document.getElementById('modalTitle').innerText = 'Tambah Tabungan'; }
+                else if (type === 'bill') { nameLabel.innerText = 'Nama Tagihan'; document.getElementById('modalTitle').innerText = 'Tambah Tagihan'; }
+            } else if (type === 'daily') {
+                targetGroup.classList.remove('hidden');
+                dateGroup.classList.remove('hidden');
+                typeGroup.classList.remove('hidden');
+                categoryGroup.classList.remove('hidden');
+                targetLabel.innerText = 'Jumlah (Rp)';
+                nameLabel.innerText = 'Keterangan';
+                document.getElementById('modalTitle').innerText = 'Catat Harian';
+                updateCategoryOptions();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('dataModal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const type = document.getElementById('modalType').value;
+            const name = document.getElementById('inputName').value;
+
+            if (type === 'income' || type === 'expense' || type === 'saving' || type === 'bill') {
+                const target = Number(document.getElementById('inputTarget').value);
+                appData[type].push({ id: Date.now(), name, target });
+            } else if (type === 'daily') {
+                const amount = Number(document.getElementById('inputTarget').value);
+                const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
+                const transType = document.getElementById('inputType').value;
+                const category = document.getElementById('inputCategory').value;
+
+                if (transType === 'saving' || transType === 'bill') {
+                    const targetObj = appData[transType].find(s => s.name === category);
+                    if (targetObj) {
+                        const currentCollected = getActualForCategory(category, transType);
+                        if (currentCollected >= targetObj.target) {
+                            alert(`Target "${category}" sudah tercapai. Tetap mau nambah?`);
+                        }
+                    }
+                }
+
+                appData.daily.push({ id: Date.now(), date, name, amount, type: transType, category });
+            }
+
+            saveData();
+            closeModal();
+        }
+
+        function deleteItem(type, id) {
+            appData[type] = appData[type].filter(item => item.id !== id);
+            saveData();
+        }
+
+        function openResetModal() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function executeAllReset() {
+            appData = JSON.parse(JSON.stringify(initialDefaultData));
+            appData.daily = []; appData.saving = []; appData.bill = [];
+            saveData();
+            closeResetModal();
+        }
+
+        function backupData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `planner_${currentYear}_${currentMonth}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() {
+            toggleMenu();
+            document.getElementById('importFile').click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.income && imported.expense) {
+                        appData = imported;
+                        saveData();
+                        alert('Berhasil diimpor!');
+                    } else { alert('Format salah!'); }
+                } catch (err) { alert('Gagal baca file!'); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        loadData(currentMonth, currentYear);
+        renderAll();
+    </script>
+</body>
+</html>
